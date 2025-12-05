@@ -246,3 +246,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Initial MVP implementation complete. All core features working - dashboard, DOM view, signals, settings. Simulated data feed generating signals successfully."
+  - agent: "testing"
+    message: "Comprehensive backend testing completed successfully. All 9 core API endpoints tested and working correctly: health check, settings, data source connection/disconnection, signal generation, metrics, and signal history. Simulated data feed generates realistic trading signals with proper HFSS scores, probabilities, and breakdown analysis. OpenRouter integration functional with proper error handling. Backend is production-ready."

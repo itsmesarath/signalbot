@@ -1,0 +1,595 @@
+[
+  {
+    "test": "Health Check",
+    "success": true,
+    "message": "Backend is healthy",
+    "timestamp": "2025-12-05T21:15:15.984748",
+    "response_data": {
+      "status": "healthy",
+      "timestamp": "2025-12-05T21:15:15.981649",
+      "connections": {
+        "mongodb": "connected",
+        "binance": false,
+        "rithmic": false,
+        "openrouter": false
+      }
+    }
+  },
+  {
+    "test": "Settings Retrieval",
+    "success": true,
+    "message": "Settings retrieved successfully",
+    "timestamp": "2025-12-05T21:15:15.999324",
+    "response_data": {
+      "id": "1c5ac008-06cc-45c1-8e45-401b0055c326",
+      "rithmic": {
+        "username": "",
+        "password": "",
+        "server": "Rithmic Paper Trading",
+        "gateway": "Chicago",
+        "is_connected": false
+      },
+      "binance": {
+        "enabled": true,
+        "selected_symbol": "BTCUSDT",
+        "available_symbols": [
+          "BTCUSDT",
+          "ETHUSDT",
+          "BNBUSDT",
+          "XRPUSDT",
+          "SOLUSDT",
+          "ADAUSDT",
+          "DOGEUSDT",
+          "AVAXUSDT",
+          "DOTUSDT",
+          "MATICUSDT"
+        ],
+        "is_connected": false
+      },
+      "openrouter": {
+        "api_key": "",
+        "selected_model": "",
+        "is_connected": false
+      },
+      "signal_weights": {
+        "delta_weight": 0.25,
+        "absorption_weight": 0.2,
+        "iceberg_weight": 0.15,
+        "ofmbi_weight": 0.2,
+        "structure_weight": 0.1,
+        "spread_penalty_weight": 0.1
+      },
+      "active_data_source": "simulated",
+      "active_symbol": "TEST",
+      "updated_at": "2025-12-05T21:15:15.995989"
+    }
+  },
+  {
+    "test": "Data Source Connect",
+    "success": true,
+    "message": "Connected to simulated data source",
+    "timestamp": "2025-12-05T21:15:16.014095",
+    "response_data": {
+      "status": "success",
+      "message": "Connecting to simulated for TEST"
+    }
+  },
+  {
+    "test": "Data Source Status",
+    "success": true,
+    "message": "Status correct: streaming",
+    "timestamp": "2025-12-05T21:15:18.022095",
+    "response_data": {
+      "is_streaming": true,
+      "binance_connected": false,
+      "rithmic_connected": false,
+      "simulated_connected": true,
+      "active_symbol": "TEST",
+      "active_source": "simulated"
+    }
+  },
+  {
+    "test": "Current Signal",
+    "success": true,
+    "message": "Signal retrieved successfully",
+    "timestamp": "2025-12-05T21:15:19.134913",
+    "response_data": {
+      "id": "1607ef1b-1c2a-4a06-8564-0310f8e5e884",
+      "symbol": "TEST",
+      "timestamp": "2025-12-05T21:15:18.846382",
+      "signal_type": "sell",
+      "hfss_score": -0.22445097834108824,
+      "probability_buy": 0.1469391043670157,
+      "probability_sell": 0.564942589789041,
+      "probability_no_trade": 0.28811830584394327,
+      "confidence": 0.564942589789041,
+      "breakdown": {
+        "delta_contribution": -0.10213571614010056,
+        "absorption_contribution": 0.12436015025459285,
+        "iceberg_contribution": 0.05332458754441948,
+        "momentum_contribution": -0.2,
+        "structure_contribution": 0.0,
+        "spread_penalty": 0.1
+      },
+      "reason": "Delta: Bearish (-0.41) | Absorption: Bid wall detected | Iceberg: Hidden liquidity detected (71.1%) | Momentum: Burst down",
+      "price_at_signal": 99.2831,
+      "ai_analysis": "",
+      "ai_validated": false
+    }
+  },
+  {
+    "test": "Metrics Retrieval",
+    "success": true,
+    "message": "Metrics retrieved successfully",
+    "timestamp": "2025-12-05T21:15:19.149437",
+    "response_data": {
+      "delta": {
+        "raw_delta": -29.567999999999998,
+        "normalized_delta": -0.3954294517904584,
+        "depth_aware_delta": -0.1788643853713403,
+        "cumulative_delta": -8.1539000000002
+      },
+      "absorption": {
+        "score": 0.5655469987318429,
+        "strength": 0.6253093749364327,
+        "bid_absorption": 0.7417669527638558,
+        "ask_absorption": 0.0,
+        "absorption_levels": [
+          {
+            "price": 99.14,
+            "side": "bid",
+            "score": 0.6890456607187465,
+            "strength": 0.7417669527638558,
+            "volume_hit": 6.182600000000001
+          },
+          {
+            "price": 99.12,
+            "side": "bid",
+            "score": 0.44204833674493915,
+            "strength": 0.5088517971090094,
+            "volume_hit": 7.250299999999999
+          }
+        ]
+      },
+      "iceberg": {
+        "probability": 0.9122322232815199,
+        "fill_to_display_ratio": 0.0,
+        "refill_intensity": 1.133687752238821,
+        "persistence_score": 0.012674053333333333,
+        "detected_levels": [
+          {
+            "price": 99.14,
+            "side": "bid",
+            "probability": 0.9122322232815199,
+            "fdr": 2.2159062398402964,
+            "estimated_hidden": 3.392500000000001
+          },
+          {
+            "price": 99.12,
+            "side": "bid",
+            "probability": 0.5652836653960779,
+            "fdr": 0.7922699507087269,
+            "estimated_hidden": 0
+          }
+        ]
+      },
+      "momentum": {
+        "ofmbi": -298.43732148035156,
+        "ofmbi_vol_normalized": -29843.725954054316,
+        "tape_speed": 36.0,
+        "volume_velocity": 74.77440000000001
+      },
+      "structure": {
+        "regime": "range",
+        "trend_direction": "up",
+        "swing_highs": [
+          100.1855,
+          100.3914,
+          100.2844,
+          98.7588,
+          99.2999
+        ],
+        "swing_lows": [
+          100.0459,
+          99.8865,
+          98.5366,
+          98.59,
+          98.9952
+        ],
+        "support_levels": [
+          98.5366,
+          98.59,
+          98.9952
+        ],
+        "resistance_levels": [
+          100.2844,
+          98.7588,
+          99.2999
+        ],
+        "bos_detected": false,
+        "choch_detected": false,
+        "trendline_rejection_probability": 0.0
+      },
+      "liquidity": {
+        "liquidity_zones": [
+          {
+            "price": 99.2161,
+            "quantity": 36.4406,
+            "type": "support"
+          },
+          {
+            "price": 99.1922,
+            "quantity": 32.5267,
+            "type": "support"
+          },
+          {
+            "price": 99.2638,
+            "quantity": 33.5787,
+            "type": "resistance"
+          },
+          {
+            "price": 99.3355,
+            "quantity": 20.7136,
+            "type": "resistance"
+          }
+        ],
+        "order_blocks": [],
+        "volume_profile": [
+          {
+            "price": 98.84573947368422,
+            "volume": 105.7033
+          },
+          {
+            "price": 99.46401842105264,
+            "volume": 48.2877
+          },
+          {
+            "price": 100.08229736842105,
+            "volume": 160.9144
+          },
+          {
+            "price": 100.70057631578948,
+            "volume": 16.2336
+          },
+          {
+            "price": 101.3188552631579,
+            "volume": 98.13380000000002
+          },
+          {
+            "price": 101.93713421052632,
+            "volume": 43.521600000000014
+          },
+          {
+            "price": 102.55541315789475,
+            "volume": 45.1593
+          },
+          {
+            "price": 103.17369210526317,
+            "volume": 19.9443
+          },
+          {
+            "price": 103.79197105263158,
+            "volume": 51.20560000000001
+          },
+          {
+            "price": 104.41025,
+            "volume": 23.1429
+          },
+          {
+            "price": 105.02852894736843,
+            "volume": 31.714100000000002
+          },
+          {
+            "price": 105.64680789473684,
+            "volume": 24.761000000000003
+          },
+          {
+            "price": 106.26508684210526,
+            "volume": 27.1754
+          },
+          {
+            "price": 106.88336578947369,
+            "volume": 191.4756
+          },
+          {
+            "price": 107.50164473684211,
+            "volume": 370.48480000000006
+          },
+          {
+            "price": 108.11992368421053,
+            "volume": 83.2382
+          },
+          {
+            "price": 108.73820263157896,
+            "volume": 97.85849999999999
+          },
+          {
+            "price": 109.35648157894737,
+            "volume": 67.00300000000001
+          },
+          {
+            "price": 109.97476052631579,
+            "volume": 102.19310000000002
+          }
+        ],
+        "vwap": 99.53220651557149,
+        "premium_zone": false,
+        "discount_zone": true
+      }
+    }
+  },
+  {
+    "test": "Signal History",
+    "success": true,
+    "message": "Retrieved 10 historical signals",
+    "timestamp": "2025-12-05T21:15:19.158280",
+    "response_data": {
+      "signals": [
+        {
+          "_id": "69334b670808e5fdf3a4b198",
+          "id": "8dc0e205-f7f5-4b2e-9ad5-fcf46bcbbf45",
+          "symbol": "TEST",
+          "timestamp": "2025-12-05T21:15:19.131000",
+          "signal_type": "sell",
+          "hfss_score": -0.2546843438429679,
+          "probability_buy": 0.1289258090634602,
+          "probability_sell": 0.5942755962020043,
+          "probability_no_trade": 0.27679859473453544,
+          "confidence": 0.5942755962020043,
+          "breakdown": {
+            "delta_contribution": -0.0988573629476146,
+            "absorption_contribution": 0.030325720553970516,
+            "iceberg_contribution": 0.06384729855067622,
+            "momentum_contribution": -0.2,
+            "structure_contribution": 0.05,
+            "spread_penalty": 0.1
+          },
+          "reason": "Delta: Bearish (-0.40) | Absorption: Bid wall detected | Iceberg: Hidden liquidity detected (85.1%) | Momentum: Burst down",
+          "price_at_signal": 99.2399,
+          "ai_analysis": "",
+          "ai_validated": false
+        },
+        {
+          "_id": "69334b660808e5fdf3a4b197",
+          "id": "1607ef1b-1c2a-4a06-8564-0310f8e5e884",
+          "symbol": "TEST",
+          "timestamp": "2025-12-05T21:15:18.846000",
+          "signal_type": "sell",
+          "hfss_score": -0.22445097834108824,
+          "probability_buy": 0.1469391043670157,
+          "probability_sell": 0.564942589789041,
+          "probability_no_trade": 0.28811830584394327,
+          "confidence": 0.564942589789041,
+          "breakdown": {
+            "delta_contribution": -0.10213571614010056,
+            "absorption_contribution": 0.12436015025459285,
+            "iceberg_contribution": 0.05332458754441948,
+            "momentum_contribution": -0.2,
+            "structure_contribution": 0.0,
+            "spread_penalty": 0.1
+          },
+          "reason": "Delta: Bearish (-0.41) | Absorption: Bid wall detected | Iceberg: Hidden liquidity detected (71.1%) | Momentum: Burst down",
+          "price_at_signal": 99.2831,
+          "ai_analysis": "",
+          "ai_validated": false
+        },
+        {
+          "_id": "69334b660808e5fdf3a4b196",
+          "id": "de6d495e-c133-40db-b0d8-ec437f0149c2",
+          "symbol": "TEST",
+          "timestamp": "2025-12-05T21:15:18.599000",
+          "signal_type": "buy",
+          "hfss_score": 0.11361160086288574,
+          "probability_buy": 0.4510705239459689,
+          "probability_sell": 0.22813877235606125,
+          "probability_no_trade": 0.32079070369796986,
+          "confidence": 0.4510705239459689,
+          "breakdown": {
+            "delta_contribution": 0.08688357508172505,
+            "absorption_contribution": -0.11779245057189514,
+            "iceberg_contribution": 0.04452047635305583,
+            "momentum_contribution": 0.2,
+            "structure_contribution": 0.0,
+            "spread_penalty": 0.1
+          },
+          "reason": "Delta: Bullish (0.35) | Absorption: Ask wall detected | Iceberg: Hidden liquidity detected (59.4%) | Momentum: Burst up",
+          "price_at_signal": 99.1373,
+          "ai_analysis": "",
+          "ai_validated": false
+        },
+        {
+          "_id": "69334b660808e5fdf3a4b195",
+          "id": "7146a106-cf73-47f7-9ef8-4dfabbc8ca84",
+          "symbol": "TEST",
+          "timestamp": "2025-12-05T21:15:18.328000",
+          "signal_type": "buy",
+          "hfss_score": 0.13759005345097888,
+          "probability_buy": 0.47623296399132126,
+          "probability_sell": 0.20858921386109958,
+          "probability_no_trade": 0.3151778221475791,
+          "confidence": 0.47623296399132126,
+          "breakdown": {
+            "delta_contribution": 0.08759005345097887,
+            "absorption_contribution": 0.0,
+            "iceberg_contribution": 0.0,
+            "momentum_contribution": 0.2,
+            "structure_contribution": -0.05,
+            "spread_penalty": 0.1
+          },
+          "reason": "Delta: Bullish (0.35) | Momentum: Burst up",
+          "price_at_signal": 98.6424,
+          "ai_analysis": "",
+          "ai_validated": false
+        },
+        {
+          "_id": "69334b650808e5fdf3a4b194",
+          "id": "483821cc-8841-4d95-a045-33ded93e36f1",
+          "symbol": "TEST",
+          "timestamp": "2025-12-05T21:15:17.943000",
+          "signal_type": "no_trade",
+          "hfss_score": 0.005242124594453251,
+          "probability_buy": 0.3385889809456538,
+          "probability_sell": 0.3281051638923023,
+          "probability_no_trade": 0.33330585516204386,
+          "confidence": 0.33330585516204386,
+          "breakdown": {
+            "delta_contribution": 0.06901638379588637,
+            "absorption_contribution": -0.08377425920143311,
+            "iceberg_contribution": 0.0,
+            "momentum_contribution": 0.2,
+            "structure_contribution": -0.08000000000000002,
+            "spread_penalty": 0.1
+          },
+          "reason": "Absorption: Ask wall detected | Momentum: Burst up | Structure: Break of structure",
+          "price_at_signal": 98.5366,
+          "ai_analysis": "",
+          "ai_validated": false
+        },
+        {
+          "_id": "69334b650808e5fdf3a4b193",
+          "id": "a2b0f61d-10ae-4b2f-80d1-950a9e914252",
+          "symbol": "TEST",
+          "timestamp": "2025-12-05T21:15:17.613000",
+          "signal_type": "sell",
+          "hfss_score": -0.4024098286744563,
+          "probability_buy": 0.06440010641872752,
+          "probability_sell": 0.7202326304125045,
+          "probability_no_trade": 0.21536726316876795,
+          "confidence": 0.7202326304125045,
+          "breakdown": {
+            "delta_contribution": -0.022409828674456244,
+            "absorption_contribution": 0.0,
+            "iceberg_contribution": 0.0,
+            "momentum_contribution": -0.2,
+            "structure_contribution": -0.08000000000000002,
+            "spread_penalty": 0.1
+          },
+          "reason": "Momentum: Burst down | Structure: Break of structure",
+          "price_at_signal": 98.8625,
+          "ai_analysis": "",
+          "ai_validated": false
+        },
+        {
+          "_id": "69334b650808e5fdf3a4b192",
+          "id": "0f9199d7-359a-4544-b2c2-7ed5f6f281bc",
+          "symbol": "TEST",
+          "timestamp": "2025-12-05T21:15:17.291000",
+          "signal_type": "sell",
+          "hfss_score": -0.40132157240864164,
+          "probability_buy": 0.06474906787404808,
+          "probability_sell": 0.7194224513126923,
+          "probability_no_trade": 0.2158284808132596,
+          "confidence": 0.7194224513126923,
+          "breakdown": {
+            "delta_contribution": -0.014590059323897103,
+            "absorption_contribution": -0.07521410846354049,
+            "iceberg_contribution": 0.06848259537879595,
+            "momentum_contribution": -0.2,
+            "structure_contribution": -0.08000000000000002,
+            "spread_penalty": 0.1
+          },
+          "reason": "Absorption: Ask wall detected | Iceberg: Hidden liquidity detected (91.3%) | Momentum: Burst down | Structure: Break of structure",
+          "price_at_signal": 99.6065,
+          "ai_analysis": "",
+          "ai_validated": false
+        },
+        {
+          "_id": "69334b640808e5fdf3a4b191",
+          "id": "6a5f9da7-f90f-4fe6-be2a-ace68c57a341",
+          "symbol": "TEST",
+          "timestamp": "2025-12-05T21:15:16.957000",
+          "signal_type": "sell",
+          "hfss_score": -0.47532764640669356,
+          "probability_buy": 0.044476570920317995,
+          "probability_sell": 0.7704143082389773,
+          "probability_no_trade": 0.18510912084070466,
+          "confidence": 0.7704143082389773,
+          "breakdown": {
+            "delta_contribution": -0.0973906876649968,
+            "absorption_contribution": -0.1371428118761708,
+            "iceberg_contribution": 0.059205853134474073,
+            "momentum_contribution": -0.2,
+            "structure_contribution": 0.0,
+            "spread_penalty": 0.1
+          },
+          "reason": "Delta: Bearish (-0.39) | Absorption: Ask wall detected | Iceberg: Hidden liquidity detected (78.9%) | Momentum: Burst down",
+          "price_at_signal": 99.9222,
+          "ai_analysis": "",
+          "ai_validated": false
+        },
+        {
+          "_id": "69334b640808e5fdf3a4b190",
+          "id": "a6f353b0-9c92-4c38-bd2b-05f937f7125b",
+          "symbol": "TEST",
+          "timestamp": "2025-12-05T21:15:16.741000",
+          "signal_type": "sell",
+          "hfss_score": -0.35873074034961616,
+          "probability_buy": 0.07975218697281428,
+          "probability_sell": 0.6862957149817416,
+          "probability_no_trade": 0.23395209804544417,
+          "confidence": 0.6862957149817416,
+          "breakdown": {
+            "delta_contribution": -0.11254259880736073,
+            "absorption_contribution": -0.01584003265739715,
+            "iceberg_contribution": 0.06965189111514171,
+            "momentum_contribution": -0.2,
+            "structure_contribution": 0.0,
+            "spread_penalty": 0.1
+          },
+          "reason": "Delta: Bearish (-0.45) | Absorption: Ask wall detected | Iceberg: Hidden liquidity detected (92.9%) | Momentum: Burst down",
+          "price_at_signal": 100.0854,
+          "ai_analysis": "",
+          "ai_validated": false
+        },
+        {
+          "_id": "69334b640808e5fdf3a4b18f",
+          "id": "0ed50b7f-d7b7-4362-adc2-a709a611b50f",
+          "symbol": "TEST",
+          "timestamp": "2025-12-05T21:15:16.457000",
+          "signal_type": "sell",
+          "hfss_score": -0.5292896097013591,
+          "probability_buy": 0.033514551513314644,
+          "probability_sell": 0.8024883808903801,
+          "probability_no_trade": 0.16399706759630522,
+          "confidence": 0.8024883808903801,
+          "breakdown": {
+            "delta_contribution": -0.08667981206630893,
+            "absorption_contribution": -0.10388990595959745,
+            "iceberg_contribution": 0.04128010832454731,
+            "momentum_contribution": -0.2,
+            "structure_contribution": -0.08000000000000002,
+            "spread_penalty": 0.1
+          },
+          "reason": "Delta: Bearish (-0.35) | Absorption: Ask wall detected | Iceberg: Hidden liquidity detected (55.0%) | Momentum: Burst down | Structure: Break of structure",
+          "price_at_signal": 100.0114,
+          "ai_analysis": "",
+          "ai_validated": false
+        }
+      ]
+    }
+  },
+  {
+    "test": "Data Source Disconnect",
+    "success": true,
+    "message": "Disconnected successfully",
+    "timestamp": "2025-12-05T21:15:19.164940",
+    "response_data": {
+      "status": "success",
+      "message": "Disconnected"
+    }
+  },
+  {
+    "test": "Data Source Status",
+    "success": true,
+    "message": "Status correct: not streaming",
+    "timestamp": "2025-12-05T21:15:20.173141",
+    "response_data": {
+      "is_streaming": false,
+      "binance_connected": false,
+      "rithmic_connected": false,
+      "simulated_connected": false,
+      "active_symbol": "TEST",
+      "active_source": "simulated"
+    }
+  }
+]

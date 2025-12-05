@@ -118,7 +118,7 @@ class AbsorptionMetrics(BaseModel):
     strength: float = 0.0  # (V_hit + L_res) / (V_hit + L_vis + L_res + epsilon)
     bid_absorption: float = 0.0
     ask_absorption: float = 0.0
-    absorption_levels: List[Dict[str, float]] = []
+    absorption_levels: List[Dict[str, Any]] = []
 
 
 class IcebergMetrics(BaseModel):

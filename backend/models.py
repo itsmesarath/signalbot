@@ -30,14 +30,16 @@ class RithmicCredentials(BaseModel):
     username: str = ""
     password: str = ""
     server: str = "Rithmic Paper Trading"
-    gateway: str = "Chicago"
+    gateway: str = "TEST"
+    gateway_url: str = ""  # Custom gateway URL (optional)
     is_connected: bool = False
 
 
 class BinanceSettings(BaseModel):
     enabled: bool = True
     selected_symbol: str = "BTCUSDT"
-    available_symbols: List[str] = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "XRPUSDT", "SOLUSDT", "ADAUSDT", "DOGEUSDT", "AVAXUSDT", "DOTUSDT", "MATICUSDT"]
+    available_symbols: List[str] = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "XRPUSDT", "SOLUSDT", "ADAUSDT", "DOGEUSDT", "AVAXUSDT", "DOTUSDT", "MATICUSDT", "LINKUSDT", "LTCUSDT", "UNIUSDT", "ATOMUSDT", "XLMUSDT"]
+    use_testnet: bool = False  # Use testnet for testing
     is_connected: bool = False
 
 

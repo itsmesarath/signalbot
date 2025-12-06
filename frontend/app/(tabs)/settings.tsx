@@ -103,7 +103,11 @@ export default function SettingsScreen() {
       setRithmicUsername(s.rithmic?.username || '');
       setRithmicPassword(s.rithmic?.password || '');
       setRithmicServer(s.rithmic?.server || 'Rithmic Paper Trading');
-      setRithmicGateway(s.rithmic?.gateway || 'TEST');
+      // Handle legacy gateway values
+      const gateway = s.rithmic?.gateway || 'TEST';
+      const normalizedGateway = gateway.toUpperCase();
+      const validGateway = RITHMIC_GATEWAYS.find(g => g.value === normalizedGateway) ? normalizedGateway : 'TEST';
+      setRithmicGateway(validGateway);
       setRithmicGatewayUrl(s.rithmic?.gateway_url || '');
       setSelectedCrypto(s.binance?.selected_symbol || 'BTCUSDT');
       setOpenrouterKey(s.openrouter?.api_key || '');

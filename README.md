@@ -41,15 +41,30 @@ Composite High-Frequency Signal Score combining:
 - **Database**: MongoDB
 - **Real-time**: WebSockets
 
+---
+
 ## Prerequisites
 
-Before running locally, ensure you have:
+### Check Your Node.js Version First!
 
-- **Node.js** >= 18.x
+```bash
+node --version
+```
+
+**Important**: This determines which installation option to use.
+
+| Your Node.js Version | Recommended Option |
+|---------------------|--------------------|
+| >= 20.19.0 or >= 22.x | **Option A** (Standard Install) |
+| 20.17.x - 20.18.x | **Option B** (Compatible Install) or Upgrade Node.js |
+| < 20.17.0 | Upgrade to Node.js 20.19+ or 22.x LTS |
+
+### Other Requirements
 - **Python** >= 3.9
-- **MongoDB** >= 6.0 (running locally or cloud instance)
+- **MongoDB** >= 6.0 (local or cloud)
 - **Yarn** (recommended) or npm
-- **Expo CLI** (`npm install -g expo-cli`)
+
+---
 
 ## Installation
 
@@ -60,49 +75,92 @@ git clone <your-repo-url>
 cd hft-signal-generator
 ```
 
-### 2. Backend Setup
+### 2. Backend Setup (Same for Both Options)
 
 ```bash
-# Navigate to backend directory
+# Navigate to backend
 cd backend
 
 # Create virtual environment
 python -m venv venv
 
 # Activate virtual environment
-# On macOS/Linux:
+# macOS/Linux:
 source venv/bin/activate
-# On Windows:
+# Windows:
 .\venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Create .env file
+# Create environment file
 cp .env.example .env
-
-# Edit .env with your settings (see Configuration section)
+# Edit .env if needed (default MongoDB settings work locally)
 ```
 
 ### 3. Frontend Setup
 
+---
+
+## Option A: Standard Install (Node.js >= 20.19.0)
+
+**Recommended if you can upgrade Node.js**
+
+#### Upgrade Node.js (if needed)
+
 ```bash
-# Navigate to frontend directory
-cd ../frontend
+# Using nvm (recommended)
+nvm install 22
+nvm use 22
+
+# Or download from https://nodejs.org (22.x LTS recommended)
+```
+
+#### Install Frontend
+
+```bash
+cd frontend
+
+# Use existing package.json (latest Expo SDK 54)
+yarn install
+
+# Create environment file
+cp .env.example .env
+
+# Edit .env - set backend URL:
+# EXPO_PUBLIC_BACKEND_URL=http://localhost:8001
+```
+
+---
+
+## Option B: Compatible Install (Node.js 20.17.x)
+
+**Use this if you cannot upgrade Node.js**
+
+```bash
+cd frontend
+
+# Use compatible package.json (Expo SDK 51)
+copy package.compatible.json package.json   # Windows
+# or
+cp package.compatible.json package.json     # macOS/Linux
+
+# Remove old lock file if exists
+rm -f yarn.lock package-lock.json
 
 # Install dependencies
 yarn install
-# or: npm install
 
-# Create .env file
+# Create environment file
 cp .env.example .env
 
-# Edit .env with your backend URL
+# Edit .env - set backend URL:
+# EXPO_PUBLIC_BACKEND_URL=http://localhost:8001
 ```
 
-### 4. Start MongoDB
+---
 
-Make sure MongoDB is running:
+### 4. Start MongoDB
 
 ```bash
 # Using Docker (recommended)
@@ -114,165 +172,140 @@ docker run -d -p 27017:27017 --name mongodb mongo:latest
 # Windows: net start MongoDB
 ```
 
-## Configuration
-
-### Backend Environment Variables (`backend/.env`)
-
-```env
-# MongoDB connection string
-MONGO_URL="mongodb://localhost:27017"
-
-# Database name
-DB_NAME="hft_signals"
-
-# Optional: OpenRouter API Key (for AI features)
-# OPENROUTER_API_KEY="your-openrouter-api-key"
-```
-
-### Frontend Environment Variables (`frontend/.env`)
-
-```env
-# Backend API URL (local development)
-EXPO_PUBLIC_BACKEND_URL=http://localhost:8001
-
-# For LAN testing (use your computer's IP)
-# EXPO_PUBLIC_BACKEND_URL=http://192.168.1.100:8001
-```
+---
 
 ## Running the Application
 
-### Start Backend
+### Terminal 1: Start Backend
 
 ```bash
 cd backend
-
-# Activate virtual environment if not already active
-source venv/bin/activate  # macOS/Linux
-# or: .\venv\Scripts\activate  # Windows
-
-# Run the server
+source venv/bin/activate  # or .\venv\Scripts\activate on Windows
 uvicorn server:app --host 0.0.0.0 --port 8001 --reload
 ```
 
-Backend will be available at: `http://localhost:8001`
+Backend runs at: `http://localhost:8001`
 
-### Start Frontend
+### Terminal 2: Start Frontend
 
 ```bash
 cd frontend
-
-# Start Expo development server
 yarn start
-# or: npx expo start
 ```
 
-This will show options to:
+This shows options:
 - Press `w` - Open in web browser
-- Press `a` - Open in Android emulator/device
-- Press `i` - Open in iOS simulator (macOS only)
-- Scan QR code with Expo Go app on your phone
+- Press `a` - Open in Android emulator
+- Press `i` - Open in iOS simulator
+- Scan QR with Expo Go app on phone
 
-## Usage Guide
+---
 
-### 1. Quick Start with Simulated Data
+## Quick Start Guide
+
+### 1. Test with Simulated Data (No API Keys Needed)
 
 1. Open the app (web or mobile)
 2. Go to **Settings** tab
 3. Scroll down and click **Start Simulation**
 4. Return to **Dashboard** to see real-time signals
 
-### 2. Connect to Binance (Live Crypto Data)
+### 2. Connect to Binance (Live Crypto)
 
 1. Go to **Settings** tab
-2. In the **Binance (Crypto)** section:
-   - Select your desired cryptocurrency (BTCUSDT, ETHUSDT, etc.)
+2. In **Binance (Crypto)** section:
+   - Select cryptocurrency (BTCUSDT, ETHUSDT, etc.)
    - Click **Connect to Binance**
-3. View live signals on the Dashboard
+3. View live signals on Dashboard
 
 *Note: Binance public data doesn't require API keys*
 
 ### 3. Connect to Rithmic (Gold/XAUUSD)
 
 1. Go to **Settings** tab
-2. In the **Rithmic (XAUUSD)** section:
-   - Enter your Rithmic username
-   - Enter your Rithmic password
-   - Select server (Paper Trading or Live)
-   - Select gateway (Chicago, etc.)
+2. In **Rithmic (XAUUSD)** section:
+   - Enter Rithmic username/password
+   - Select server and gateway
    - Click **Save**, then **Connect**
-
-*Note: Requires Rithmic subscription/trial account*
 
 ### 4. Enable AI Analysis
 
-1. Get an API key from [OpenRouter](https://openrouter.ai)
-2. Go to **Settings** tab
-3. In the **OpenRouter AI** section:
-   - Paste your API key
-   - Click on "Select AI Model" to load available models
-   - Search and select your preferred model
-   - Click **Save OpenRouter Settings**
-4. On the **Signals** page, click **AI Insight** for analysis
+1. Get API key from [OpenRouter](https://openrouter.ai)
+2. Go to **Settings** → **OpenRouter AI**
+3. Paste API key and select a model
+4. Use **AI Insight** button on Signals page
+
+---
 
 ## App Screens
 
 ### Dashboard
-- Real-time price display with trend indicator
-- Current trading signal (BUY/SELL/NO_TRADE)
+- Real-time price with trend indicator
+- Trading signal (BUY/SELL/NO_TRADE)
 - Probability distribution bars
-- HFSS (High-Frequency Signal Score)
-- Order flow metrics cards (Delta, Absorption, Iceberg, OFMBI)
-- Market structure info (Regime, Trend, BOS/CHOCH)
+- HFSS Score
+- Order flow metrics (Delta, Absorption, Iceberg, OFMBI)
+- Market structure info
 
 ### Signals
 - Historical signal list
 - Filter by type (All, Buy, Sell, Hold)
-- AI Insight button for market analysis
-- Signal details with breakdown reasoning
+- AI Insight button
+- Signal breakdown reasoning
 
 ### DOM (Depth of Market)
-- Order book ladder visualization
-- Bid/Ask depth bars
+- Order book ladder
+- Bid/Ask depth visualization
 - Spread indicator
 - Time & Sales tape
 
 ### Settings
 - Connection status
-- Binance cryptocurrency selection
-- Rithmic credentials
-- OpenRouter AI configuration
-- Simulated data toggle
+- Data source configuration
+- AI model selection
 
-## API Endpoints
+---
+
+## API Reference
 
 ### Health & Status
-- `GET /api/health` - Health check
-- `GET /api/data-source/status` - Connection status
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/health` | GET | Health check |
+| `/api/data-source/status` | GET | Connection status |
 
 ### Settings
-- `GET /api/settings` - Get all settings
-- `POST /api/settings/rithmic` - Update Rithmic credentials
-- `POST /api/settings/binance` - Update Binance settings
-- `POST /api/settings/openrouter` - Update OpenRouter settings
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/settings` | GET | Get all settings |
+| `/api/settings/rithmic` | POST | Update Rithmic credentials |
+| `/api/settings/binance` | POST | Update Binance settings |
+| `/api/settings/openrouter` | POST | Update OpenRouter settings |
 
 ### Data Sources
-- `POST /api/data-source/connect?source=binance&symbol=BTCUSDT` - Connect
-- `POST /api/data-source/disconnect` - Disconnect
-- `GET /api/binance/symbols` - Get available symbols
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/data-source/connect` | POST | Connect to source |
+| `/api/data-source/disconnect` | POST | Disconnect |
+| `/api/binance/symbols` | GET | Available symbols |
 
 ### Signals & Analytics
-- `GET /api/signals/current` - Current signal
-- `GET /api/signals/history?limit=100` - Signal history
-- `GET /api/metrics` - Current analytics metrics
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/signals/current` | GET | Current signal |
+| `/api/signals/history` | GET | Signal history |
+| `/api/metrics` | GET | Analytics metrics |
 
 ### AI
-- `GET /api/openrouter/models` - Get available AI models
-- `POST /api/openrouter/set-model?model_id=...` - Set active model
-- `POST /api/ai/analyze` - Get AI market analysis
-- `GET /api/ai/summary` - Get quick summary
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/openrouter/models` | GET | Available AI models |
+| `/api/ai/analyze` | POST | AI market analysis |
 
 ### WebSocket
-- `WS /api/ws` - Real-time data stream (trades, orderbook, signals)
+- `WS /api/ws` - Real-time stream (trades, orderbook, signals)
+
+---
 
 ## Signal Formulas
 
@@ -293,72 +326,80 @@ AbsorptionScore(p,t) = V_hit(p,t) / (V_hit(p,t) + L_vis(p,t) + ε)
 IP(p,t) = σ(a₀ + a₁·FDR(p,t) + a₂·R_refill(p,t) + a₃·T_persist(p,t))
 ```
 
-### OFMBI (Order Flow Momentum Burst Index)
-```
-OFMBI(t) = Δ_norm(t) · TS(t) / (S(t) + ε)
-```
-
 ### HFSS (High Frequency Signal Score)
 ```
 HFSS(t) = w₁Δ̃(t) + w₂AS̃(t) + w₃IP̃(t) + w₄OFMBĨ(t) + w₅Structurẽ(t) - w₆SpreadPeñ(t)
 ```
 
+---
+
 ## Troubleshooting
 
-### Backend won't start
-- Ensure MongoDB is running: `mongosh` to test connection
+### "The engine node is incompatible" Error
+
+```
+error metro@0.83.2: The engine "node" is incompatible. Expected ">=20.19.4". Got "20.17.0"
+```
+
+**Solutions**:
+1. **Upgrade Node.js** to 20.19+ or 22.x LTS (recommended)
+2. **Use compatible packages**: Copy `package.compatible.json` to `package.json`
+
+### Backend Won't Start
+
+- Ensure MongoDB is running: `mongosh` to test
 - Check Python version: `python --version` (needs 3.9+)
-- Verify all dependencies: `pip install -r requirements.txt`
+- Reinstall dependencies: `pip install -r requirements.txt`
 
-### Frontend connection issues
+### Frontend Connection Issues
+
 - Verify backend is running on port 8001
-- Check EXPO_PUBLIC_BACKEND_URL in frontend/.env
-- For mobile testing, use your computer's LAN IP, not localhost
+- Check `EXPO_PUBLIC_BACKEND_URL` in `.env`
+- For mobile: use computer's LAN IP, not localhost
 
-### No signals being generated
-- Ensure a data source is connected (check Settings > Connection Status)
-- Try the Simulated data source first
+### No Signals Generated
+
+- Check Settings → Connection Status
+- Try Simulated data source first
 - Check backend logs for errors
 
-### Binance connection fails
-- Some regions block Binance API (use VPN if needed)
-- Try simulated data as fallback
+### Binance Connection Fails
 
-## Development
+- Some regions block Binance API (use VPN)
+- Use simulated data as fallback
 
-### Project Structure
+---
+
+## Project Structure
+
 ```
 ├── backend/
 │   ├── server.py           # FastAPI main server
 │   ├── models.py           # Pydantic data models
 │   ├── analytics_engine.py # Order flow analytics
-│   ├── data_feeds.py       # Binance/Rithmic/Simulated feeds
+│   ├── data_feeds.py       # Data source integrations
 │   ├── openrouter_client.py# AI integration
 │   ├── requirements.txt    # Python dependencies
-│   └── .env               # Environment variables
+│   └── .env.example        # Environment template
 ├── frontend/
 │   ├── app/
-│   │   ├── (tabs)/        # Tab screens
-│   │   │   ├── index.tsx  # Dashboard
-│   │   │   ├── signals.tsx# Signal history
+│   │   ├── (tabs)/         # Tab screens
+│   │   │   ├── index.tsx   # Dashboard
+│   │   │   ├── signals.tsx # Signal history
 │   │   │   ├── orderbook.tsx # DOM view
 │   │   │   └── settings.tsx# Configuration
-│   │   └── _layout.tsx    # Navigation layout
-│   ├── package.json       # Node dependencies
-│   └── .env              # Environment variables
+│   │   └── _layout.tsx     # Navigation
+│   ├── package.json        # Latest dependencies
+│   ├── package.compatible.json # Node 20.17 compatible
+│   └── .env.example        # Environment template
 └── README.md
 ```
 
-### Adding New Data Sources
-
-1. Create a new feed class in `backend/data_feeds.py`
-2. Implement `connect()`, `disconnect()`, and callback handlers
-3. Add to the `connect_data_source()` endpoint in `server.py`
-4. Add UI controls in `frontend/app/(tabs)/settings.tsx`
+---
 
 ## License
 
-MIT License - See LICENSE file for details
+MIT License
 
 ## Support
 

@@ -1,141 +1,171 @@
 diff --git a/README.md b/README.md
-index c4c01a7..8d96a9d 100644
+index 8d96a9d..d9c8950 100644
 --- a/README.md
 +++ b/README.md
-@@ -218,16 +218,31 @@ This shows options:
-    - Click **Connect to Binance**
- 3. View live signals on Dashboard
+@@ -380,8 +380,18 @@ error metro@0.83.2: The engine "node" is incompatible. Expected ">=20.19.4". Got
  
--*Note: Binance public data doesn't require API keys*
-+*Note: Binance public data doesn't require API keys. However, Binance may be blocked in certain regions (US, etc.). When running locally from an unrestricted region, it should work. The cloud preview may show geographic restrictions.*
+ ### Binance Connection Fails
  
- ### 3. Connect to Rithmic (Gold/XAUUSD)
- 
--1. Go to **Settings** tab
--2. In **Rithmic (XAUUSD)** section:
--   - Enter Rithmic username/password
--   - Select server and gateway
-+Rithmic provides professional futures market data. To use real Rithmic data:
+-- Some regions block Binance API (use VPN)
+-- Use simulated data as fallback
++- Some regions block Binance API (US, etc.)
++- The cloud preview may show geographic restrictions (error 451)
++- Running the app **locally on your machine** should work in most regions
++- App automatically tries Binance testnet as fallback
 +
-+1. **Get Rithmic Credentials**:
-+   - Contact your futures broker (many offer Rithmic connectivity)
-+   - Or apply directly at [rithmic.com/apis](https://www.rithmic.com/apis)
-+   - For production, you must pass Rithmic's conformance test
++### Rithmic Shows "Simulated" Data
 +
-+2. **Configure in App**:
-+   - Go to **Settings** tab → **Rithmic (XAUUSD)**
-+   - Enter your Username and Password
-+   - Select Server: "Rithmic Paper Trading" or "Rithmic Test"
-+   - Select Gateway: "Test/Paper Trading" for testing
-    - Click **Save**, then **Connect**
++- Without valid Rithmic credentials, XAUUSD data is simulated for demonstration
++- To get real data:
++  1. Contact your futures broker for Rithmic access
++  2. Complete Rithmic's conformance testing for production
++  3. Use the gateway URL provided by your broker
  
-+3. **Gateway Options**:
-+   - **Test/Paper Trading**: rituz00100.rithmic.com:443 (for conformance testing)
-+   - **Chicago**: Requires conformance approval
-+   - **Custom URL**: Enter your broker-provided gateway URL
-+
-+*Without valid credentials, Rithmic data is simulated for demonstration.*
-+
- ### 4. Enable AI Analysis
+ ---
  
- 1. Get API key from [OpenRouter](https://openrouter.ai)
 diff --git a/model.patch b/model.patch
-index ef98739..e69de29 100644
+index 7b6ba7c..e69de29 100644
 --- a/model.patch
 +++ b/model.patch
-@@ -1,95 +0,0 @@
--diff --git a/backend/data_feeds.py b/backend/data_feeds.py
--index 0f0edfb..1c0741f 100644
----- a/backend/data_feeds.py
--+++ b/backend/data_feeds.py
--@@ -184,33 +184,38 @@ class BinanceFeed:
--     @staticmethod
--     async def get_exchange_info() -> List[str]:
--         """Get list of available trading pairs."""
---        # Try mainnet first, then testnet
---        urls = [
---            f"{BinanceFeed.REST_URL}/exchangeInfo",
---            f"{BinanceFeed.TESTNET_REST_URL}/exchangeInfo"
--+        # Try testnet first (no geographic restrictions), then mainnet
--+        urls_to_try = [
--+            (BinanceFeed.TESTNET_REST_URL, "testnet"),
--+            (BinanceFeed.REST_URL, "mainnet")
--         ]
--         
---        for url in urls:
--+        for base_url, name in urls_to_try:
--             try:
---                async with httpx.AsyncClient(timeout=10.0) as client:
--+                url = f"{base_url}/exchangeInfo"
--+                logger.info(f"Fetching symbols from Binance {name}: {url}")
--+                
--+                async with httpx.AsyncClient(timeout=15.0) as client:
--                     response = await client.get(url)
--                     
--                     if response.status_code == 451:
---                        logger.warning(f"Geographic restriction on {url}, trying next...")
--+                        logger.warning(f"Geographic restriction on Binance {name}")
--                         continue
--                     
--                     if response.status_code == 200:
--                         data = response.json()
---                        symbols = [s['symbol'] for s in data['symbols'] 
---                                  if s['status'] == 'TRADING' and s['quoteAsset'] == 'USDT']
---                        return sorted(symbols)[:50]
--+                        symbols = [s['symbol'] for s in data.get('symbols', []) 
--+                                  if s.get('status') == 'TRADING' and s.get('quoteAsset') == 'USDT']
--+                        if symbols:
--+                            logger.info(f"Got {len(symbols)} symbols from Binance {name}")
--+                            return sorted(symbols)[:50]
--                         
--             except Exception as e:
---                logger.error(f"Error fetching from {url}: {e}")
--+                logger.error(f"Error fetching from Binance {name}: {e}")
--                 continue
--         
--         # Return default symbols if all APIs fail
---        logger.warning("Using default symbol list")
--+        logger.warning("All Binance APIs failed, using default symbol list")
--         return BinanceFeed.DEFAULT_SYMBOLS
+@@ -1,141 +0,0 @@
+-diff --git a/README.md b/README.md
+-index c4c01a7..8d96a9d 100644
+---- a/README.md
+-+++ b/README.md
+-@@ -218,16 +218,31 @@ This shows options:
+-    - Click **Connect to Binance**
+- 3. View live signals on Dashboard
 - 
+--*Note: Binance public data doesn't require API keys*
+-+*Note: Binance public data doesn't require API keys. However, Binance may be blocked in certain regions (US, etc.). When running locally from an unrestricted region, it should work. The cloud preview may show geographic restrictions.*
 - 
+- ### 3. Connect to Rithmic (Gold/XAUUSD)
+- 
+--1. Go to **Settings** tab
+--2. In **Rithmic (XAUUSD)** section:
+--   - Enter Rithmic username/password
+--   - Select server and gateway
+-+Rithmic provides professional futures market data. To use real Rithmic data:
+-+
+-+1. **Get Rithmic Credentials**:
+-+   - Contact your futures broker (many offer Rithmic connectivity)
+-+   - Or apply directly at [rithmic.com/apis](https://www.rithmic.com/apis)
+-+   - For production, you must pass Rithmic's conformance test
+-+
+-+2. **Configure in App**:
+-+   - Go to **Settings** tab → **Rithmic (XAUUSD)**
+-+   - Enter your Username and Password
+-+   - Select Server: "Rithmic Paper Trading" or "Rithmic Test"
+-+   - Select Gateway: "Test/Paper Trading" for testing
+-    - Click **Save**, then **Connect**
+- 
+-+3. **Gateway Options**:
+-+   - **Test/Paper Trading**: rituz00100.rithmic.com:443 (for conformance testing)
+-+   - **Chicago**: Requires conformance approval
+-+   - **Custom URL**: Enter your broker-provided gateway URL
+-+
+-+*Without valid credentials, Rithmic data is simulated for demonstration.*
+-+
+- ### 4. Enable AI Analysis
+- 
+- 1. Get API key from [OpenRouter](https://openrouter.ai)
 -diff --git a/model.patch b/model.patch
--index 9ae7a54..e69de29 100644
+-index ef98739..e69de29 100644
 ---- a/model.patch
 -+++ b/model.patch
--@@ -1,35 +0,0 @@
---diff --git a/test_result.md b/test_result.md
---index ab385b8..e31f04c 100644
------ a/test_result.md
---+++ b/test_result.md
---@@ -155,15 +155,18 @@ backend:
+-@@ -1,95 +0,0 @@
+--diff --git a/backend/data_feeds.py b/backend/data_feeds.py
+--index 0f0edfb..1c0741f 100644
+----- a/backend/data_feeds.py
+--+++ b/backend/data_feeds.py
+--@@ -184,33 +184,38 @@ class BinanceFeed:
+--     @staticmethod
+--     async def get_exchange_info() -> List[str]:
+--         """Get list of available trading pairs."""
+---        # Try mainnet first, then testnet
+---        urls = [
+---            f"{BinanceFeed.REST_URL}/exchangeInfo",
+---            f"{BinanceFeed.TESTNET_REST_URL}/exchangeInfo"
+--+        # Try testnet first (no geographic restrictions), then mainnet
+--+        urls_to_try = [
+--+            (BinanceFeed.TESTNET_REST_URL, "testnet"),
+--+            (BinanceFeed.REST_URL, "mainnet")
+--         ]
+--         
+---        for url in urls:
+--+        for base_url, name in urls_to_try:
+--             try:
+---                async with httpx.AsyncClient(timeout=10.0) as client:
+--+                url = f"{base_url}/exchangeInfo"
+--+                logger.info(f"Fetching symbols from Binance {name}: {url}")
+--+                
+--+                async with httpx.AsyncClient(timeout=15.0) as client:
+--                     response = await client.get(url)
+--                     
+--                     if response.status_code == 451:
+---                        logger.warning(f"Geographic restriction on {url}, trying next...")
+--+                        logger.warning(f"Geographic restriction on Binance {name}")
+--                         continue
+--                     
+--                     if response.status_code == 200:
+--                         data = response.json()
+---                        symbols = [s['symbol'] for s in data['symbols'] 
+---                                  if s['status'] == 'TRADING' and s['quoteAsset'] == 'USDT']
+---                        return sorted(symbols)[:50]
+--+                        symbols = [s['symbol'] for s in data.get('symbols', []) 
+--+                                  if s.get('status') == 'TRADING' and s.get('quoteAsset') == 'USDT']
+--+                        if symbols:
+--+                            logger.info(f"Got {len(symbols)} symbols from Binance {name}")
+--+                            return sorted(symbols)[:50]
+--                         
+--             except Exception as e:
+---                logger.error(f"Error fetching from {url}: {e}")
+--+                logger.error(f"Error fetching from Binance {name}: {e}")
+--                 continue
+--         
+--         # Return default symbols if all APIs fail
+---        logger.warning("Using default symbol list")
+--+        logger.warning("All Binance APIs failed, using default symbol list")
+--         return BinanceFeed.DEFAULT_SYMBOLS
 -- 
---   - task: "OpenRouter Integration - Model fetching and AI analysis"
---     implemented: true
----    working: "NA"
---+    working: true
---     file: "/app/backend/openrouter_client.py"
---     stuck_count: 0
---     priority: "medium"
----    needs_retesting: true
---+    needs_retesting: false
---     status_history:
---       - working: "NA"
---         agent: "main"
---         comment: "Implemented but needs API key to test actual model fetching"
---+      - working: true
---+        agent: "testing"
---+        comment: "OpenRouter endpoints working correctly - returns empty models list without API key and proper error handling for AI analysis. Integration is functional, just requires API key for full functionality."
 -- 
---   - task: "WebSocket streaming - Real-time trade/orderbook updates"
---     implemented: true
---@@ -242,4 +245,6 @@ test_plan:
--- 
--- agent_communication:
---   - agent: "main"
----    message: "Initial MVP implementation complete. All core features working - dashboard, DOM view, signals, settings. Simulated data feed generating signals successfully."
---\ No newline at end of file
---+    message: "Initial MVP implementation complete. All core features working - dashboard, DOM view, signals, settings. Simulated data feed generating signals successfully."
---+  - agent: "testing"
---+    message: "Comprehensive backend testing completed successfully. All 9 core API endpoints tested and working correctly: health check, settings, data source connection/disconnection, signal generation, metrics, and signal history. Simulated data feed generates realistic trading signals with proper HFSS scores, probabilities, and breakdown analysis. OpenRouter integration functional with proper error handling. Backend is production-ready."
---\ No newline at end of file
+--diff --git a/model.patch b/model.patch
+--index 9ae7a54..e69de29 100644
+----- a/model.patch
+--+++ b/model.patch
+--@@ -1,35 +0,0 @@
+---diff --git a/test_result.md b/test_result.md
+---index ab385b8..e31f04c 100644
+------ a/test_result.md
+---+++ b/test_result.md
+---@@ -155,15 +155,18 @@ backend:
+--- 
+---   - task: "OpenRouter Integration - Model fetching and AI analysis"
+---     implemented: true
+----    working: "NA"
+---+    working: true
+---     file: "/app/backend/openrouter_client.py"
+---     stuck_count: 0
+---     priority: "medium"
+----    needs_retesting: true
+---+    needs_retesting: false
+---     status_history:
+---       - working: "NA"
+---         agent: "main"
+---         comment: "Implemented but needs API key to test actual model fetching"
+---+      - working: true
+---+        agent: "testing"
+---+        comment: "OpenRouter endpoints working correctly - returns empty models list without API key and proper error handling for AI analysis. Integration is functional, just requires API key for full functionality."
+--- 
+---   - task: "WebSocket streaming - Real-time trade/orderbook updates"
+---     implemented: true
+---@@ -242,4 +245,6 @@ test_plan:
+--- 
+--- agent_communication:
+---   - agent: "main"
+----    message: "Initial MVP implementation complete. All core features working - dashboard, DOM view, signals, settings. Simulated data feed generating signals successfully."
+---\ No newline at end of file
+---+    message: "Initial MVP implementation complete. All core features working - dashboard, DOM view, signals, settings. Simulated data feed generating signals successfully."
+---+  - agent: "testing"
+---+    message: "Comprehensive backend testing completed successfully. All 9 core API endpoints tested and working correctly: health check, settings, data source connection/disconnection, signal generation, metrics, and signal history. Simulated data feed generates realistic trading signals with proper HFSS scores, probabilities, and breakdown analysis. OpenRouter integration functional with proper error handling. Backend is production-ready."
+---\ No newline at end of file

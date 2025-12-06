@@ -158,6 +158,7 @@ export default function SettingsScreen() {
         password: rithmicPassword,
         server: rithmicServer,
         gateway: rithmicGateway,
+        gateway_url: rithmicGatewayUrl,
         is_connected: false,
       });
       Alert.alert('Success', 'Rithmic credentials saved');

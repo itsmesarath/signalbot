@@ -52,7 +52,7 @@ interface Settings {
 // Rithmic gateway options
 const RITHMIC_GATEWAYS = [
   { label: 'Test/Paper Trading', value: 'TEST', url: 'rituz00100.rithmic.com:443' },
-  { label: 'Chicago', value: 'CHICAGO', url: '' },
+  { label: 'Chicago (Production)', value: 'CHICAGO', url: '' },
   { label: 'Custom URL', value: 'CUSTOM', url: '' },
 ];
 

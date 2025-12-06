@@ -103,7 +103,8 @@ export default function SettingsScreen() {
       setRithmicUsername(s.rithmic?.username || '');
       setRithmicPassword(s.rithmic?.password || '');
       setRithmicServer(s.rithmic?.server || 'Rithmic Paper Trading');
-      setRithmicGateway(s.rithmic?.gateway || 'Chicago');
+      setRithmicGateway(s.rithmic?.gateway || 'TEST');
+      setRithmicGatewayUrl(s.rithmic?.gateway_url || '');
       setSelectedCrypto(s.binance?.selected_symbol || 'BTCUSDT');
       setOpenrouterKey(s.openrouter?.api_key || '');
       setSelectedModel(s.openrouter?.selected_model || '');

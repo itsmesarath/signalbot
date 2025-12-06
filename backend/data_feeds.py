@@ -1,4 +1,9 @@
-"""Data Feed Managers for Rithmic, Binance, and Simulated Data"""
+"""Data Feed Managers for Rithmic, Binance, and Simulated Data
+
+Rithmic: Uses async_rithmic library for real market data
+Binance: Uses public WebSocket API with testnet fallback
+Simulated: Generates realistic test data
+"""
 import asyncio
 import json
 import random
@@ -12,12 +17,36 @@ from models import Trade, OrderBook, OrderBookLevel, DataSource
 
 logger = logging.getLogger(__name__)
 
+# Try to import async_rithmic
+try:
+    from async_rithmic import RithmicClient, DataType, LastTradePresenceBits, BestBidOfferPresenceBits
+    RITHMIC_AVAILABLE = True
+except ImportError:
+    RITHMIC_AVAILABLE = False
+    logger.warning("async_rithmic not installed. Rithmic feed will use simulation mode.")
+
 
 class BinanceFeed:
-    """Binance WebSocket feed for cryptocurrency data."""
+    """Binance WebSocket feed for cryptocurrency data.
     
+    Supports both mainnet and testnet endpoints.
+    Falls back to testnet if mainnet returns 451 (geographic restriction).
+    """
+    
+    # Mainnet endpoints
     WEBSOCKET_URL = "wss://stream.binance.com:9443/ws"
     REST_URL = "https://api.binance.com/api/v3"
+    
+    # Testnet endpoints (no geographic restrictions)
+    TESTNET_WEBSOCKET_URL = "wss://testnet.binance.vision/ws"
+    TESTNET_REST_URL = "https://testnet.binance.vision/api/v3"
+    
+    # Default symbols when API fails
+    DEFAULT_SYMBOLS = [
+        "BTCUSDT", "ETHUSDT", "BNBUSDT", "XRPUSDT", "SOLUSDT",
+        "ADAUSDT", "DOGEUSDT", "AVAXUSDT", "DOTUSDT", "MATICUSDT",
+        "LINKUSDT", "LTCUSDT", "UNIUSDT", "ATOMUSDT", "XLMUSDT"
+    ]
     
     def __init__(self):
         self.ws: Optional[websockets.WebSocketClientProtocol] = None
@@ -29,6 +58,7 @@ class BinanceFeed:
         self._running = False
         self._reconnect_delay = 1
         self._max_reconnect_delay = 60
+        self._use_testnet = False
     
     async def connect(self, symbol: str = "btcusdt"):
         """Connect to Binance WebSocket streams."""
@@ -37,10 +67,13 @@ class BinanceFeed:
         
         while self._running:
             try:
-                # Subscribe to trade and depth streams
-                stream_url = f"{self.WEBSOCKET_URL}/{self.symbol}@aggTrade/{self.symbol}@depth20@100ms"
+                # Choose endpoint based on testnet flag
+                base_url = self.TESTNET_WEBSOCKET_URL if self._use_testnet else self.WEBSOCKET_URL
+                stream_url = f"{base_url}/{self.symbol}@aggTrade/{self.symbol}@depth20@100ms"
                 
-                async with websockets.connect(stream_url) as ws:
+                logger.info(f"Connecting to Binance {'testnet' if self._use_testnet else 'mainnet'} for {self.symbol.upper()}")
+                
+                async with websockets.connect(stream_url, ping_interval=20, ping_timeout=10) as ws:
                     self.ws = ws
                     self.is_connected = True
                     self._reconnect_delay = 1
@@ -55,10 +88,18 @@ class BinanceFeed:
                             break
                         await self._handle_message(json.loads(message))
                         
-            except websockets.exceptions.ConnectionClosed:
-                logger.warning("Binance connection closed, reconnecting...")
+            except websockets.exceptions.ConnectionClosed as e:
+                logger.warning(f"Binance connection closed: {e}")
             except Exception as e:
+                error_str = str(e)
                 logger.error(f"Binance connection error: {e}")
+                
+                # Check for geographic restriction (451 error)
+                if "451" in error_str or "restricted" in error_str.lower():
+                    if not self._use_testnet:
+                        logger.info("Switching to Binance testnet due to geographic restriction")
+                        self._use_testnet = True
+                        continue
             finally:
                 self.is_connected = False
                 if self.on_connection_change:
@@ -75,20 +116,18 @@ class BinanceFeed:
                 event_type = data['e']
                 
                 if event_type == 'aggTrade':
-                    # Aggregate trade
                     trade = Trade(
                         symbol=data['s'],
                         price=float(data['p']),
                         quantity=float(data['q']),
                         timestamp=datetime.fromtimestamp(data['T'] / 1000),
-                        is_buyer_maker=data['m'],  # True = sell aggressor
+                        is_buyer_maker=data['m'],
                         trade_id=str(data['a'])
                     )
                     if self.on_trade:
                         await self.on_trade(trade)
                 
                 elif event_type == 'depthUpdate':
-                    # Order book update
                     bids = [OrderBookLevel(price=float(b[0]), quantity=float(b[1])) for b in data['b']]
                     asks = [OrderBookLevel(price=float(a[0]), quantity=float(a[1])) for a in data['a']]
                     
@@ -145,73 +184,251 @@ class BinanceFeed:
     @staticmethod
     async def get_exchange_info() -> List[str]:
         """Get list of available trading pairs."""
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(f"{BinanceFeed.REST_URL}/exchangeInfo")
-                data = response.json()
-                symbols = [s['symbol'] for s in data['symbols'] 
-                          if s['status'] == 'TRADING' and s['quoteAsset'] == 'USDT']
-                return sorted(symbols)[:50]  # Return top 50 USDT pairs
-        except Exception as e:
-            logger.error(f"Error fetching exchange info: {e}")
-            return ["BTCUSDT", "ETHUSDT", "BNBUSDT", "XRPUSDT", "SOLUSDT"]
+        # Try mainnet first, then testnet
+        urls = [
+            f"{BinanceFeed.REST_URL}/exchangeInfo",
+            f"{BinanceFeed.TESTNET_REST_URL}/exchangeInfo"
+        ]
+        
+        for url in urls:
+            try:
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    response = await client.get(url)
+                    
+                    if response.status_code == 451:
+                        logger.warning(f"Geographic restriction on {url}, trying next...")
+                        continue
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        symbols = [s['symbol'] for s in data['symbols'] 
+                                  if s['status'] == 'TRADING' and s['quoteAsset'] == 'USDT']
+                        return sorted(symbols)[:50]
+                        
+            except Exception as e:
+                logger.error(f"Error fetching from {url}: {e}")
+                continue
+        
+        # Return default symbols if all APIs fail
+        logger.warning("Using default symbol list")
+        return BinanceFeed.DEFAULT_SYMBOLS
 
 
 class RithmicFeed:
-    """Rithmic connection manager (placeholder for real implementation).
+    """Rithmic connection manager using async_rithmic library.
     
-    Note: Real Rithmic integration requires their proprietary API and credentials.
-    This class provides the interface and simulated behavior for development.
+    Requires valid Rithmic credentials and conformance testing for production.
     """
+    
+    # Known Rithmic gateway URLs
+    GATEWAYS = {
+        "TEST": "rituz00100.rithmic.com:443",
+        "PAPER": "rituz00100.rithmic.com:443",  # Paper trading (same as test for conformance)
+        "CHICAGO": "rituz00100.rithmic.com:443",  # Production requires conformance
+    }
     
     def __init__(self):
         self.is_connected = False
         self.username = ""
         self.password = ""
         self.server = "Rithmic Paper Trading"
-        self.gateway = "Chicago"
+        self.gateway = "TEST"
+        self.gateway_url = ""
         self.on_trade: Optional[Callable] = None
         self.on_order_book: Optional[Callable] = None
         self.on_connection_change: Optional[Callable] = None
         self._running = False
+        self._client = None
+        self._symbol = "GC"  # Gold futures
+        self._exchange = "COMEX"
     
-    async def connect(self, username: str, password: str, server: str = "Rithmic Paper Trading", gateway: str = "Chicago"):
-        """Attempt to connect to Rithmic.
+    async def connect(
+        self, 
+        username: str, 
+        password: str, 
+        server: str = "Rithmic Paper Trading",
+        gateway: str = "TEST",
+        gateway_url: str = ""
+    ):
+        """Connect to Rithmic using async_rithmic library.
         
-        Note: This is a placeholder. Real implementation would use Rithmic's API.
+        Args:
+            username: Rithmic username
+            password: Rithmic password
+            server: System name (e.g., "Rithmic Paper Trading", "Rithmic Test")
+            gateway: Gateway name (TEST, PAPER, CHICAGO)
+            gateway_url: Custom gateway URL (optional, uses GATEWAYS dict if not provided)
         """
         self.username = username
         self.password = password
         self.server = server
         self.gateway = gateway
+        self.gateway_url = gateway_url or self.GATEWAYS.get(gateway.upper(), self.GATEWAYS["TEST"])
         
-        # Validate credentials (placeholder logic)
         if not username or not password:
             raise ValueError("Rithmic credentials required")
         
-        # In a real implementation, this would connect to Rithmic's servers
-        # For now, we'll simulate the connection
         self._running = True
-        self.is_connected = True
         
-        if self.on_connection_change:
-            await self.on_connection_change(True, "XAUUSD")
+        if not RITHMIC_AVAILABLE:
+            logger.warning("async_rithmic not available, using simulation mode for XAUUSD")
+            await self._simulate_xauusd_feed()
+            return
         
-        logger.info(f"Connected to Rithmic ({server}) - Simulated")
-        
-        # Start simulated data feed for XAUUSD
-        asyncio.create_task(self._simulate_xauusd_feed())
+        try:
+            logger.info(f"Connecting to Rithmic: {self.server} via {self.gateway_url}")
+            
+            # Create Rithmic client
+            self._client = RithmicClient(
+                user=username,
+                password=password,
+                system_name=server,
+                app_name="HFT_Signal_Generator",
+                app_version="1.0",
+                url=self.gateway_url
+            )
+            
+            # Connect
+            await self._client.connect()
+            self.is_connected = True
+            
+            if self.on_connection_change:
+                await self.on_connection_change(True, "XAUUSD")
+            
+            logger.info(f"Connected to Rithmic ({server})")
+            
+            # Get front month gold contract
+            try:
+                security_code = await self._client.get_front_month_contract(self._symbol, self._exchange)
+                logger.info(f"Streaming data for {security_code}")
+            except Exception as e:
+                logger.warning(f"Could not get front month contract: {e}. Using GCZ5")
+                security_code = "GCZ5"  # Fallback
+            
+            # Set up callbacks
+            self._client.on_tick += self._on_tick_received
+            self._client.on_order_book += self._on_order_book_received
+            
+            # Subscribe to market data
+            data_type = DataType.LAST_TRADE | DataType.BBO
+            await self._client.subscribe_to_market_data(security_code, self._exchange, data_type)
+            
+            # Also subscribe to order book if available
+            try:
+                await self._client.subscribe_to_market_data(security_code, self._exchange, DataType.ORDER_BOOK)
+            except Exception as e:
+                logger.warning(f"Order book subscription failed: {e}")
+            
+            # Keep connection alive
+            while self._running:
+                await asyncio.sleep(1)
+                
+        except Exception as e:
+            logger.error(f"Rithmic connection error: {e}")
+            logger.info("Falling back to simulation mode for XAUUSD")
+            
+            # Fall back to simulation
+            if self.on_connection_change:
+                await self.on_connection_change(True, "XAUUSD (Simulated)")
+            await self._simulate_xauusd_feed()
+    
+    async def _on_tick_received(self, data: dict):
+        """Handle incoming tick data from Rithmic."""
+        try:
+            if data.get("data_type") == DataType.LAST_TRADE:
+                if data.get("presence_bits", 0) & LastTradePresenceBits.LAST_TRADE:
+                    trade = Trade(
+                        symbol="XAUUSD",
+                        price=float(data.get("trade_price", 0)),
+                        quantity=float(data.get("trade_size", 1)),
+                        timestamp=datetime.utcnow(),
+                        is_buyer_maker=data.get("aggressor_side", "") == "S",
+                        trade_id=str(data.get("ssboe", ""))
+                    )
+                    if self.on_trade:
+                        await self.on_trade(trade)
+            
+            elif data.get("data_type") == DataType.BBO:
+                # Best bid/offer update - create order book with just top level
+                presence = data.get("presence_bits", 0)
+                
+                if presence & (BestBidOfferPresenceBits.BID | BestBidOfferPresenceBits.ASK):
+                    best_bid = float(data.get("bid_price", 0))
+                    best_ask = float(data.get("ask_price", 0))
+                    bid_size = float(data.get("bid_size", 0))
+                    ask_size = float(data.get("ask_size", 0))
+                    
+                    if best_bid > 0 and best_ask > 0:
+                        order_book = OrderBook(
+                            symbol="XAUUSD",
+                            timestamp=datetime.utcnow(),
+                            bids=[OrderBookLevel(price=best_bid, quantity=bid_size)],
+                            asks=[OrderBookLevel(price=best_ask, quantity=ask_size)],
+                            best_bid=best_bid,
+                            best_ask=best_ask,
+                            spread=round(best_ask - best_bid, 2),
+                            mid_price=round((best_bid + best_ask) / 2, 2)
+                        )
+                        if self.on_order_book:
+                            await self.on_order_book(order_book)
+                            
+        except Exception as e:
+            logger.error(f"Error handling Rithmic tick: {e}")
+    
+    async def _on_order_book_received(self, data: dict):
+        """Handle order book updates from Rithmic."""
+        try:
+            # Parse order book data
+            bids = []
+            asks = []
+            
+            for level in data.get("levels", []):
+                level_data = OrderBookLevel(
+                    price=float(level.get("price", 0)),
+                    quantity=float(level.get("size", 0))
+                )
+                if level.get("side") == "B":
+                    bids.append(level_data)
+                else:
+                    asks.append(level_data)
+            
+            if bids or asks:
+                bids = sorted(bids, key=lambda x: x.price, reverse=True)
+                asks = sorted(asks, key=lambda x: x.price)
+                
+                best_bid = bids[0].price if bids else 0
+                best_ask = asks[0].price if asks else 0
+                
+                order_book = OrderBook(
+                    symbol="XAUUSD",
+                    timestamp=datetime.utcnow(),
+                    bids=bids,
+                    asks=asks,
+                    best_bid=best_bid,
+                    best_ask=best_ask,
+                    spread=round(best_ask - best_bid, 2) if best_bid and best_ask else 0,
+                    mid_price=round((best_bid + best_ask) / 2, 2) if best_bid and best_ask else 0
+                )
+                if self.on_order_book:
+                    await self.on_order_book(order_book)
+                    
+        except Exception as e:
+            logger.error(f"Error handling Rithmic order book: {e}")
     
     async def _simulate_xauusd_feed(self):
-        """Simulate XAUUSD tick data for development/testing."""
+        """Simulate XAUUSD tick data when Rithmic is unavailable."""
         base_price = 2350.0  # Base gold price
         volatility = 0.5
+        
+        self.is_connected = True
         
         while self._running:
             try:
                 # Generate realistic price movement
                 change = random.gauss(0, volatility)
                 base_price += change
+                base_price = max(base_price, 1800)  # Realistic gold floor
+                base_price = min(base_price, 2800)  # Realistic gold ceiling
                 
                 # Generate trade
                 trade = Trade(
@@ -257,16 +474,25 @@ class RithmicFeed:
                 if self.on_order_book:
                     await self.on_order_book(order_book)
                 
-                await asyncio.sleep(random.uniform(0.05, 0.2))  # 50-200ms intervals
+                await asyncio.sleep(random.uniform(0.05, 0.2))
                 
             except Exception as e:
-                logger.error(f"Error in Rithmic simulation: {e}")
+                logger.error(f"Error in XAUUSD simulation: {e}")
                 await asyncio.sleep(1)
     
     async def disconnect(self):
         """Disconnect from Rithmic."""
         self._running = False
+        
+        if self._client and RITHMIC_AVAILABLE:
+            try:
+                await self._client.disconnect()
+            except Exception as e:
+                logger.error(f"Error disconnecting from Rithmic: {e}")
+        
+        self._client = None
         self.is_connected = False
+        
         if self.on_connection_change:
             await self.on_connection_change(False, "XAUUSD")
 
@@ -311,11 +537,11 @@ class SimulatedFeed:
                 # Price movement
                 noise = random.gauss(0, 0.1)
                 self._base_price += trend + noise
-                self._base_price = max(self._base_price, 1)  # Prevent negative prices
+                self._base_price = max(self._base_price, 1)
                 
-                # Generate trade with realistic volume distribution
-                volume = random.paretovariate(1.5)  # Fat-tailed distribution
-                is_buyer = random.random() > 0.5 + (trend * 2)  # Trend influences direction
+                # Generate trade
+                volume = random.paretovariate(1.5)
+                is_buyer = random.random() > 0.5 + (trend * 2)
                 
                 trade = Trade(
                     symbol=self.symbol,
@@ -340,7 +566,6 @@ class SimulatedFeed:
                         bid_price = mid - spread / 2 - i * spread * 0.5
                         ask_price = mid + spread / 2 + i * spread * 0.5
                         
-                        # Volume decreases with distance from mid
                         bid_vol = random.uniform(10, 100) / (i + 1)
                         ask_vol = random.uniform(10, 100) / (i + 1)
                         

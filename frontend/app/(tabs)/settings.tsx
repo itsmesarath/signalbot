@@ -344,6 +344,12 @@ export default function SettingsScreen() {
                 </>
               )}
             </TouchableOpacity>
+            
+            <Text style={styles.infoText}>
+              Binance provides free real-time crypto data. No API key required for market data.
+              Note: If connection fails, the app may be running from a geographically restricted region.
+              Running locally on your machine should work in most regions.
+            </Text>
           </View>
 
           {/* Rithmic Settings */}

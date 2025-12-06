@@ -380,8 +380,18 @@ error metro@0.83.2: The engine "node" is incompatible. Expected ">=20.19.4". Got
 
 ### Binance Connection Fails
 
-- Some regions block Binance API (use VPN)
-- Use simulated data as fallback
+- Some regions block Binance API (US, etc.)
+- The cloud preview may show geographic restrictions (error 451)
+- Running the app **locally on your machine** should work in most regions
+- App automatically tries Binance testnet as fallback
+
+### Rithmic Shows "Simulated" Data
+
+- Without valid Rithmic credentials, XAUUSD data is simulated for demonstration
+- To get real data:
+  1. Contact your futures broker for Rithmic access
+  2. Complete Rithmic's conformance testing for production
+  3. Use the gateway URL provided by your broker
 
 ---
 

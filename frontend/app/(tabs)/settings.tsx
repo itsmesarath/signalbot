@@ -373,7 +373,7 @@ export default function SettingsScreen() {
               secureTextEntry
             />
             
-            <Text style={styles.label}>Server</Text>
+            <Text style={styles.label}>Server (System Name)</Text>
             <TextInput
               style={styles.input}
               placeholder="Rithmic Paper Trading"
@@ -383,13 +383,51 @@ export default function SettingsScreen() {
             />
             
             <Text style={styles.label}>Gateway</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Chicago"
-              placeholderTextColor="#666"
-              value={rithmicGateway}
-              onChangeText={setRithmicGateway}
-            />
+            <TouchableOpacity
+              style={styles.dropdown}
+              onPress={() => setShowGatewayPicker(!showGatewayPicker)}
+            >
+              <Text style={styles.dropdownText}>
+                {RITHMIC_GATEWAYS.find(g => g.value === rithmicGateway)?.label || rithmicGateway}
+              </Text>
+              <Ionicons name={showGatewayPicker ? 'chevron-up' : 'chevron-down'} size={20} color="#888" />
+            </TouchableOpacity>
+            
+            {showGatewayPicker && (
+              <View style={styles.listContainer}>
+                {RITHMIC_GATEWAYS.map((gw) => (
+                  <TouchableOpacity
+                    key={gw.value}
+                    style={[
+                      styles.listItem,
+                      gw.value === rithmicGateway && styles.listItemSelected
+                    ]}
+                    onPress={() => {
+                      setRithmicGateway(gw.value);
+                      if (gw.url) setRithmicGatewayUrl(gw.url);
+                      setShowGatewayPicker(false);
+                    }}
+                  >
+                    <Text style={styles.listItemText}>{gw.label}</Text>
+                    {gw.url && <Text style={styles.modelId}>{gw.url}</Text>}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+            
+            {rithmicGateway === 'CUSTOM' && (
+              <>
+                <Text style={styles.label}>Gateway URL</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="e.g., rituz00100.rithmic.com:443"
+                  placeholderTextColor="#666"
+                  value={rithmicGatewayUrl}
+                  onChangeText={setRithmicGatewayUrl}
+                  autoCapitalize="none"
+                />
+              </>
+            )}
             
             <View style={styles.buttonRow}>
               <TouchableOpacity

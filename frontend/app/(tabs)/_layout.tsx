@@ -1,7 +1,12 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, View, Platform } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
+
+// Tab bar icon component to avoid inline function issues
+const TabBarIcon = ({ name, color, size }: { name: keyof typeof Ionicons.glyphMap; color: string; size: number }) => (
+  <Ionicons name={name} size={size} color={color} />
+);
 
 export default function TabLayout() {
   return (
@@ -18,36 +23,28 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="stats-chart" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <TabBarIcon name="stats-chart" color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="signals"
         options={{
           title: 'Signals',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="pulse" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <TabBarIcon name="pulse" color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="orderbook"
         options={{
           title: 'DOM',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <TabBarIcon name="list" color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <TabBarIcon name="settings" color={color} size={size} />,
         }}
       />
     </Tabs>

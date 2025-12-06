@@ -184,33 +184,38 @@ class BinanceFeed:
     @staticmethod
     async def get_exchange_info() -> List[str]:
         """Get list of available trading pairs."""
-        # Try mainnet first, then testnet
-        urls = [
-            f"{BinanceFeed.REST_URL}/exchangeInfo",
-            f"{BinanceFeed.TESTNET_REST_URL}/exchangeInfo"
+        # Try testnet first (no geographic restrictions), then mainnet
+        urls_to_try = [
+            (BinanceFeed.TESTNET_REST_URL, "testnet"),
+            (BinanceFeed.REST_URL, "mainnet")
         ]
         
-        for url in urls:
+        for base_url, name in urls_to_try:
             try:
-                async with httpx.AsyncClient(timeout=10.0) as client:
+                url = f"{base_url}/exchangeInfo"
+                logger.info(f"Fetching symbols from Binance {name}: {url}")
+                
+                async with httpx.AsyncClient(timeout=15.0) as client:
                     response = await client.get(url)
                     
                     if response.status_code == 451:
-                        logger.warning(f"Geographic restriction on {url}, trying next...")
+                        logger.warning(f"Geographic restriction on Binance {name}")
                         continue
                     
                     if response.status_code == 200:
                         data = response.json()
-                        symbols = [s['symbol'] for s in data['symbols'] 
-                                  if s['status'] == 'TRADING' and s['quoteAsset'] == 'USDT']
-                        return sorted(symbols)[:50]
+                        symbols = [s['symbol'] for s in data.get('symbols', []) 
+                                  if s.get('status') == 'TRADING' and s.get('quoteAsset') == 'USDT']
+                        if symbols:
+                            logger.info(f"Got {len(symbols)} symbols from Binance {name}")
+                            return sorted(symbols)[:50]
                         
             except Exception as e:
-                logger.error(f"Error fetching from {url}: {e}")
+                logger.error(f"Error fetching from Binance {name}: {e}")
                 continue
         
         # Return default symbols if all APIs fail
-        logger.warning("Using default symbol list")
+        logger.warning("All Binance APIs failed, using default symbol list")
         return BinanceFeed.DEFAULT_SYMBOLS
 
 

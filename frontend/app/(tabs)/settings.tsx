@@ -49,7 +49,7 @@ interface Settings {
   active_symbol: string;
 }
 
-// Rithmic gateway options
+// Rithmic gateway options - defined outside component
 const RITHMIC_GATEWAYS = [
   { label: 'Test/Paper Trading', value: 'TEST', url: 'rituz00100.rithmic.com:443' },
   { label: 'Chicago (Production)', value: 'CHICAGO', url: '' },

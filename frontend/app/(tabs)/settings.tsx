@@ -447,8 +447,12 @@ export default function SettingsScreen() {
             </View>
             
             <Text style={styles.infoText}>
-              Note: Rithmic connection simulates XAUUSD data for demo purposes.
-              Real Rithmic integration requires their proprietary API.
+              Rithmic integration uses the async_rithmic library. You need valid Rithmic credentials
+              from your broker. For testing, use the Test/Paper Trading gateway. Production access
+              requires passing Rithmic's conformance test. Without credentials, XAUUSD data is simulated.
+            </Text>
+            <Text style={[styles.infoText, { marginTop: 8, color: '#5352ed' }]}>
+              Get Rithmic access: Contact your futures broker or visit rithmic.com/apis
             </Text>
           </View>
 

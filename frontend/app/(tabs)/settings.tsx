@@ -30,12 +30,14 @@ interface Settings {
     password: string;
     server: string;
     gateway: string;
+    gateway_url: string;
     is_connected: boolean;
   };
   binance: {
     enabled: boolean;
     selected_symbol: string;
     available_symbols: string[];
+    use_testnet: boolean;
     is_connected: boolean;
   };
   openrouter: {
@@ -47,6 +49,13 @@ interface Settings {
   active_symbol: string;
 }
 
+// Rithmic gateway options
+const RITHMIC_GATEWAYS = [
+  { label: 'Test/Paper Trading', value: 'TEST', url: 'rituz00100.rithmic.com:443' },
+  { label: 'Chicago', value: 'CHICAGO', url: '' },
+  { label: 'Custom URL', value: 'CUSTOM', url: '' },
+];
+
 export default function SettingsScreen() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,7 +65,9 @@ export default function SettingsScreen() {
   const [rithmicUsername, setRithmicUsername] = useState('');
   const [rithmicPassword, setRithmicPassword] = useState('');
   const [rithmicServer, setRithmicServer] = useState('Rithmic Paper Trading');
-  const [rithmicGateway, setRithmicGateway] = useState('Chicago');
+  const [rithmicGateway, setRithmicGateway] = useState('TEST');
+  const [rithmicGatewayUrl, setRithmicGatewayUrl] = useState('');
+  const [showGatewayPicker, setShowGatewayPicker] = useState(false);
   
   // Binance fields
   const [selectedCrypto, setSelectedCrypto] = useState('BTCUSDT');

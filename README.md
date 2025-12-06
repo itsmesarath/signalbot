@@ -218,15 +218,30 @@ This shows options:
    - Click **Connect to Binance**
 3. View live signals on Dashboard
 
-*Note: Binance public data doesn't require API keys*
+*Note: Binance public data doesn't require API keys. However, Binance may be blocked in certain regions (US, etc.). When running locally from an unrestricted region, it should work. The cloud preview may show geographic restrictions.*
 
 ### 3. Connect to Rithmic (Gold/XAUUSD)
 
-1. Go to **Settings** tab
-2. In **Rithmic (XAUUSD)** section:
-   - Enter Rithmic username/password
-   - Select server and gateway
+Rithmic provides professional futures market data. To use real Rithmic data:
+
+1. **Get Rithmic Credentials**:
+   - Contact your futures broker (many offer Rithmic connectivity)
+   - Or apply directly at [rithmic.com/apis](https://www.rithmic.com/apis)
+   - For production, you must pass Rithmic's conformance test
+
+2. **Configure in App**:
+   - Go to **Settings** tab → **Rithmic (XAUUSD)**
+   - Enter your Username and Password
+   - Select Server: "Rithmic Paper Trading" or "Rithmic Test"
+   - Select Gateway: "Test/Paper Trading" for testing
    - Click **Save**, then **Connect**
+
+3. **Gateway Options**:
+   - **Test/Paper Trading**: rituz00100.rithmic.com:443 (for conformance testing)
+   - **Chicago**: Requires conformance approval
+   - **Custom URL**: Enter your broker-provided gateway URL
+
+*Without valid credentials, Rithmic data is simulated for demonstration.*
 
 ### 4. Enable AI Analysis
 

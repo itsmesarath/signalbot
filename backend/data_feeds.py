@@ -328,6 +328,15 @@ class RithmicFeed:
             while self._running:
                 await asyncio.sleep(1)
                 
+        except ConnectionResetError as e:
+            logger.error(f"Rithmic connection reset - this often happens when connecting from cloud/datacenter IPs.")
+            logger.error(f"Rithmic may block connections from non-residential IPs. Try running locally.")
+            logger.info("Falling back to simulated XAUUSD data")
+            
+            if self.on_connection_change:
+                await self.on_connection_change(True, "XAUUSD (Simulated - Cloud IP blocked)")
+            await self._simulate_xauusd_feed()
+            
         except Exception as e:
             logger.error(f"Rithmic connection error: {e}")
             logger.info("Falling back to simulation mode for XAUUSD")
